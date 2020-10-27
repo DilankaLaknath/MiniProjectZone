@@ -2,6 +2,7 @@
 #include "error.h"
 #include <stdbool.h>
 
+//ygyfhbfajnanlasn
 enum UCSRnA_bits {MPCMn, U2Xn, UPEn, DORn, FEn, UDREn, TXCn, RXCn};
 enum UCSRnB_bits {TXB8n, RXB8n, UCSZn2, TXENn, RXENn, UDRIEn, TXCIEn, RXCIEn};
 enum UCSRnC_bits {UCPOLn, UCSZn0, UCSZn1, USBSn, UPMn0, UPMn1, UMSELn0, UMSELn1};
