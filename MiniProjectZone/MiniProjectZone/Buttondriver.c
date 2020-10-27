@@ -4,7 +4,7 @@
 
 ButtonCallback_t g_button_callback;
 
-uint32_t btn_init (enum portx btn_port, uint8_t btn_pin)
+uint32_t btn_init (portx btn_port, uint8_t btn_pin)
 {	
 	uint32_t err=NO_ERROR;
 	g_button_callback = NULL;
@@ -74,8 +74,15 @@ void btn_interrupt(uint8_t int_num)
 	{
 		state=(gpio_hal_pin_read(&PIND,int_num));
 		if (g_button_callback != NULL)
-		{
-			g_button_callback(PortD,int_num, state);
+		{	
+			if (state)
+			{
+				g_button_callback(PortD,int_num, released);
+			}
+			else
+			{
+				g_button_callback(PortD,int_num, pressed);
+			}
 		}	
 	}
 	else
@@ -83,7 +90,14 @@ void btn_interrupt(uint8_t int_num)
 		state=(gpio_hal_pin_read(&PINE,int_num));
 		if (g_button_callback != NULL)
 		{
-			g_button_callback(PortE,int_num, state);
+			if (state)
+			{
+				g_button_callback(PortE,int_num, released);
+			}
+			else
+			{
+				g_button_callback(PortE,int_num, pressed);
+			}
 		}
 	}
 }

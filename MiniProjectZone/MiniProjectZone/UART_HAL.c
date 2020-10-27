@@ -2,10 +2,9 @@
 #include "error.h"
 #include <stdbool.h>
 
-//ygyfhbfajnanlasn
-enum UCSRnA_bits {MPCMn, U2Xn, UPEn, DORn, FEn, UDREn, TXCn, RXCn};
-enum UCSRnB_bits {TXB8n, RXB8n, UCSZn2, TXENn, RXENn, UDRIEn, TXCIEn, RXCIEn};
-enum UCSRnC_bits {UCPOLn, UCSZn0, UCSZn1, USBSn, UPMn0, UPMn1, UMSELn0, UMSELn1};
+typedef enum {MPCMn, U2Xn, UPEn, DORn, FEn, UDREn, TXCn, RXCn} UCSRnA_bits ;
+typedef enum {TXB8n, RXB8n, UCSZn2, TXENn, RXENn, UDRIEn, TXCIEn, RXCIEn} UCSRnB_bits;
+typedef enum {UCPOLn, UCSZn0, UCSZn1, USBSn, UPMn0, UPMn1, UMSELn0, UMSELn1} UCSRnC_bits; 
 
 on_byte_received g_on_byte_received = NULL;
 on_transmission_complete g_on_transmission_complete = NULL;
@@ -65,7 +64,7 @@ uint32_t map_uart_registers(uint8_t uart_number);
  *
  * @return UNSUPPORTED_BAUDRATE - baudrate is not 2400/4800/9600/19200. 
  */
-uint32_t set_baudrate_registers( uint32_t baudrate);
+uint32_t set_baudrate_registers(uint32_t baudrate);
 
 
 /**
@@ -91,13 +90,13 @@ uint32_t set_frame_size(uint8_t frame_size);
  *
  * @return None
  */
-void set_parity_register_values(uint8_t parity_type);
+void set_parity_register_values(parity_types parity_type);
 
 
 
 /////////////////////////Public Functions////////////////////
 
-uint32_t hal_uart_init(uint8_t uart_number, uint32_t baudrate, uint8_t frame_size, uint8_t parity_type)
+uint32_t hal_uart_init(uint8_t uart_number, uint32_t baudrate, uint8_t frame_size, parity_types parity_type)
 {	
 	uint32_t err = NO_ERROR;
 	do 
@@ -378,7 +377,7 @@ uint32_t set_frame_size(uint8_t frame_size)  // can not configure for 9 bit vers
 	return err;
 }
 
-void set_parity_register_values(uint8_t parity_type)
+void set_parity_register_values(parity_types parity_type)
 {
 	switch (parity_type){
 		case (NO_PARITY): 

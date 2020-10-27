@@ -8,9 +8,9 @@
 #include <avr/interrupt.h>
 
 /*Enumerators*/
-enum io {input=0,output=1};
-enum sense {low, change, falling, rising};
-enum portx {PortA,PortB,PortC,PortD,PortE,PortF,PortG,PortH,PortJ,PortK,PortL};
+typedef enum {input=0,output=1} io;
+typedef enum {low, change, falling, rising} sense;
+typedef enum {PortA,PortB,PortC,PortD,PortE,PortF,PortG,PortH,PortJ,PortK,PortL} portx;
 
 /*Function pointers*/
 typedef void (*interrupt_callback_t)(uint8_t int_num);
@@ -35,7 +35,7 @@ typedef void (*interrupt_callback_t)(uint8_t int_num);
  *
  * @return PIN_ERROR  - pin number wrong
  */
-uint32_t gpio_hal_pin_init(volatile uint8_t *port, uint8_t pin, enum io iotype );
+uint32_t gpio_hal_pin_init(volatile uint8_t *port, uint8_t pin, io iotype );
 
 
 /**
@@ -111,6 +111,6 @@ uint8_t gpio_hal_pin_read(volatile uint8_t *port, uint8_t pin);
  *
  * @return PIN_ERROR  - pin number wrong
  */
-uint32_t gpio_hal_pin_config_interrupt(volatile uint8_t *port, uint8_t pin, enum sense sensetype, interrupt_callback_t callback);
+uint32_t gpio_hal_pin_config_interrupt(volatile uint8_t *port, uint8_t pin, sense sensetype, interrupt_callback_t callback);
 
 #endif

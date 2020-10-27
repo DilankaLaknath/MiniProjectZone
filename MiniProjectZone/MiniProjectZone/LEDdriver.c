@@ -17,9 +17,9 @@ volatile uint8_t *PORTx = NULL;
  *
  * @return PORT_ERROR - port name wrong
  */
-uint32_t map_registers(enum portx led_port);
+uint32_t map_registers(portx led_port);
 
-uint32_t led_init (enum portx led_port, uint8_t led_pin)
+uint32_t led_init (portx led_port, uint8_t led_pin)
 {	
 	uint32_t err=NO_ERROR;
 	do
@@ -45,7 +45,7 @@ uint32_t led_init (enum portx led_port, uint8_t led_pin)
 	return err;		
 }
 
-uint32_t led_toggle(enum portx led_port, uint8_t led_pin)
+uint32_t led_toggle(portx led_port, uint8_t led_pin)
 {
 	uint32_t err=NO_ERROR;
 	do
@@ -70,7 +70,7 @@ uint32_t led_toggle(enum portx led_port, uint8_t led_pin)
 	return err;
 }
 
-uint32_t led_off(enum portx led_port, uint8_t led_pin)
+uint32_t led_off(portx led_port, uint8_t led_pin)
 {
 	uint32_t err=NO_ERROR;
 	do
@@ -95,7 +95,7 @@ uint32_t led_off(enum portx led_port, uint8_t led_pin)
 	return err;
 }
 
-uint32_t led_on(enum portx led_port, uint8_t led_pin)
+uint32_t led_on(portx led_port, uint8_t led_pin)
 {
 	uint32_t err=NO_ERROR;
 	do
@@ -120,7 +120,7 @@ uint32_t led_on(enum portx led_port, uint8_t led_pin)
 	return err;
 }
 
-uint32_t map_registers(enum portx led_port)
+uint32_t map_registers(portx led_port)
 {
 	uint32_t err = NO_ERROR;
 	do

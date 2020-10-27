@@ -4,7 +4,7 @@
 interrupt_callback_t g_interrupt_callback = NULL;
 
 
-uint32_t gpio_hal_pin_init(volatile uint8_t *port, uint8_t pin, enum io iotype )
+uint32_t gpio_hal_pin_init(volatile uint8_t *port, uint8_t pin, io iotype )
 {	
 	uint32_t err=NO_ERROR;
 	do 
@@ -100,7 +100,7 @@ uint8_t gpio_hal_pin_read(volatile uint8_t *port, uint8_t pin)
 	return *port & (1 << pin);
 }
 
-uint32_t gpio_hal_pin_config_interrupt(volatile uint8_t *port, uint8_t pin, enum sense sensetype, interrupt_callback_t callback)
+uint32_t gpio_hal_pin_config_interrupt(volatile uint8_t *port, uint8_t pin, sense sensetype, interrupt_callback_t callback)
 {	
 	uint32_t err=NO_ERROR;
 	uint8_t bit;

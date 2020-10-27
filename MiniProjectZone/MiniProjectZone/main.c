@@ -21,7 +21,7 @@
 
 void when_byte_received(uint8_t uart_number, char data, bool parity_error);
 void when_transmission_complete(uint8_t uart_number);
-void on_button_pressed(enum portx buttonPort, uint8_t buttonPin, bool buttonState);
+void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonState);
 
 
 int main(void)
@@ -48,25 +48,12 @@ void when_transmission_complete(uint8_t uart_number)
 	}
 }
 
-void when_byte_received(uint8_t uart_number, char data, bool parity_error)
-{
-	if ((uart_number == g_uart_number) && (data == 5) && (parity_error == false) )
-	{
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-	}
-}
 
-void on_button_pressed(enum portx buttonPort, uint8_t buttonPin, bool buttonState)
+
+void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonState)
 {
 	uint8_t buffer [buffer_length] = {3, 5, 6, 10, 24};
-	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == 0) )
+	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == pressed) )
 	{
 		hal_uart_send(g_uart_number, &buffer[0], buffer_length);
 	}
