@@ -2,7 +2,7 @@
  * UART.c
  *
  * Created: 10/22/2020 5:39:39 PM
- * Author : Kavish Ranawella
+ * Author : Dilanka Wickramasinghe
  */ 
 
 #define F_CPU 16000000L // Specify oscillator frequency
