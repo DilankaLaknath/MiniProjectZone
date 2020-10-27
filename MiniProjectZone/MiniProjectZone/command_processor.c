@@ -12,7 +12,7 @@
 
 #define uint8_t RADIUS = 4;
 
-
+//ENUM
 enum {
 	TASK1,
 	TASK2
