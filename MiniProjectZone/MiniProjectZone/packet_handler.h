@@ -9,6 +9,11 @@
 #ifndef PACKET_HANDLER_H_
 #define PACKET_HANDLER_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <avr/io.h>
+
 /*!
  Transmit complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
@@ -99,7 +104,7 @@ void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
  * @return
  * None
  */
-void ph_transmit_packet(void);
+void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body);
 
 /**
  * @brief

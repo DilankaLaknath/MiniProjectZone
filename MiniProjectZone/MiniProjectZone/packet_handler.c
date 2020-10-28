@@ -1,3 +1,9 @@
+#include "packet_handler.h"
+#include "UART_HAL.h"
+
+#define RX_PKT_BUFF_LEN 20
+#define TX_PKT_BDY_BUFF_LEN 20
+
 /*! Structure which holds application callbacks. Callbacks has been set to null */
 PH_CALLBACKS_t g_app_callbacks = {0 ,0};
 
@@ -11,10 +17,10 @@ uint8_t g_rx_Byte;
 uint16_t g_cal_crc;
 
 /*! Used to store the received packet */
-SERIAL_RX_PACKET_t g_rx_packet;
+uint8_t g_rx_packet_buffer[RX_PKT_BUFF_LEN];
 
 /*! Used to keep the transmitting packet */
-uint8_t g_tx_buff[sizeof(SERIAL_TX_PACKET_t) + 8];   //8 is the packet handler overhead
+uint8_t g_tx_buff[sizeof(TX_PKT_BDY_BUFF_LEN) + 8];   //8 is the packet handler overhead
 
 /*! Used to store the received CRC */
 uint16_t g_received_crc;
@@ -23,21 +29,28 @@ uint16_t g_received_crc;
 PH_STATUS_t g_ph_status;
 
 
+void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb)
+{
+	hal_uart_init(uart_number, 9600, 8, NO_PARITY);
+	
+}
 
+void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body)
+{
+	
+}
+
+PH_STATUS_t ph_get_status(void)
+{
+	
+}
 
 
 
 void when_byte_received(uint8_t uart_number, char data, bool parity_error)
 {
-	if ((uart_number == g_uart_number) && (data == 5) && (parity_error == false) )
+	if ((uart_number == 1) && (data == 5) && (parity_error == false) )
 	{
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
-		led_toggle(g_led_port, g_led_pin);
-		_delay_ms(500);
+	
 	}
 }

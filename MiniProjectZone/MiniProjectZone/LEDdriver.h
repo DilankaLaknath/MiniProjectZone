@@ -72,4 +72,6 @@ uint32_t led_off(portx led_port, uint8_t led_pin);
  */
 uint32_t led_on(portx led_port, uint8_t led_pin);
 
+uint32_t led_blink(portx led_port, uint8_t led_pin, uint8_t count);
+
 #endif
