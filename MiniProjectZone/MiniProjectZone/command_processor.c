@@ -19,9 +19,62 @@
 uint8_t claculate_radius(uint8_t packet_body);
 double doubleFromBytes(uint8_t *packet_body) ;
 
+enum{
+	cmd_control_led = 0,
+	cmd_blink_led,
+	cmd_find_points_inside_the_circle,
+	};
+
 
 ////////////////////// Public Functions///////////////////
-uint32_t find_task_to_execute(uint8_t packet_body)
+
+uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
+{
+	uint32_t err = NO_ERROR;
+	
+	response->lenght = 0;
+	response->data[response->lenght++] = request->data[0];
+	
+	switch(request->data[0])
+	{
+		case cmd_control_led:
+		err = contor_led(request, response);
+		break;
+		
+		case cmd_blink_led;
+		break;
+		
+		case cmd_find_points_inside_the_circle:
+		break;
+		
+		default:
+			response->data[response->lenght++]; = ERROR_UNSUPPORTED_CMD;
+		break;		
+	}
+	return err;
+}
+
+uint32_t contor_led(packet_t * request, packet_t * response)
+{
+	switch(request->data[1])
+	{
+		case LED_ON:
+		response->data[response->lenght++] = NO_ERROR;
+		led_on (g_led_port_T1, g_led_pin_T1);
+		break;
+		
+		case LED_OFF:
+		response->data[response->lenght++] = NO_ERROR;
+		led_off (g_led_port_T1, g_led_pin_T1);
+		break;
+		
+		default:
+		response->data[response->lenght++] = ERROR_UNSUPPORTED_LED_CMD;
+		break;
+	}
+}
+
+uint32_t find_task_to_execute(uint8_t packet_body[])
 {
 	uint8_t err =  NO_ERROR;
 	do 
@@ -109,7 +162,7 @@ uint8_t do_task3(uint8_t packet_body)
 }
 
 ////////////////////// Private Functions///////////////////
-uint8_t claculate_radius(uint8_t packet_body)
+uint8_t claculate_radius(uint8_t packet_body[])
 {
 	uint8_t err = NULL_ERROR;
 	do
