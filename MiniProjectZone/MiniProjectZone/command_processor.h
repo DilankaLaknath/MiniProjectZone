@@ -29,6 +29,23 @@ enum task2_state
 	ON_THE_CIRCLE
 };
 
+/**
+ * @brief
+ * This function perform the task according to the packet received 
+ * 
+ * @note
+ * It checks the first byte of the packet and decide the task to perform  
+ * if the byte = 0 perform task1 - turn on or off led according to the next byte  
+ * if the byte = 1 perform task2 - blink the led 3 times when button pressed   
+ * if the byte = 2 perform task3 - decide the given coordinate is inside the circle or not
+ *
+ * @param
+ * *request - pointer of the packet received
+ * *response - pointer of the response packet to send
+ *
+ * @return
+ * response - response packet to send which contain task status or error status
+ */
 uint32_t cmd_proc_process_request(packet_t * request, packet_t * response);
 
 #endif

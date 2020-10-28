@@ -19,7 +19,7 @@
 
 
 ///////////////////// Private Enumerators /////////////////
-enum
+enum tasks
 {
 	cmd_control_led = 0,
 	cmd_blink_led,
@@ -63,7 +63,6 @@ uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
 }
 
 ////////////////////// Private Functions///////////////////
-
 uint32_t contor_led(packet_t * request, packet_t * response)
 {
 	switch(request->data[1])
