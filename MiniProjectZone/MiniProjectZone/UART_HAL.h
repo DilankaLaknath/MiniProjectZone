@@ -2,11 +2,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <avr/io.h>
+#include <string.h>
 #include <avr/interrupt.h>
 
 typedef enum {EVEN, ODD,NO_PARITY}parity_types;
 
-typedef void (*on_byte_received)(uint8_t uart_number, char data, bool parity_error);
+typedef void (*on_byte_received)(uint8_t uart_number, uint8_t data, bool parity_error);
 typedef void (*on_transmission_complete)(uint8_t uart_number);
 
 /**
@@ -78,5 +79,5 @@ uint32_t hal_uart_set_callbacks(on_byte_received obr, on_transmission_complete o
  *
  * @return TX_ARRAY_ERROR               - array length greater than the transmit buffer we have.
  */
-uint32_t hal_uart_send(uint8_t uart_number, uint8_t *tx_buffer, uint8_t length);
+uint32_t hal_uart_send(uint8_t uart_number, uint8_t * tx_buffer, uint8_t length);
 

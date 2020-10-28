@@ -9,17 +9,29 @@
 #ifndef PACKET_HANDLER_H_
 #define PACKET_HANDLER_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <avr/io.h>
+
+/*Possible CRC errors*/
+typedef enum{
+	NO_CRC_ERROR,
+	CRC_ERROR_DETECTED
+}PACKET_CRC_ERR_STATE_t;
+
+
 /*!
  Transmit complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
  */
-typedef void (*transmit_cmplt_cb_t) (uint32_t status);
+typedef void (*transmit_cmplt_cb_t) (uint8_t uart_number ,uint32_t status);
 
 /*!
  Receive complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
  */
-typedef void (*receive_cmplt_cb_t) (uint8_t * tl_packet, uint32_t error);
+typedef void (*receive_cmplt_cb_t) (uint8_t uart_number, uint8_t tl_packet [] , PACKET_CRC_ERR_STATE_t error);
 
 
 /*!
@@ -74,6 +86,7 @@ typedef enum{
     PACKET_COLLECTOR_STATE_STATE_CRC_H,       
 }PACKET_COLLECTOR_STATE_t;
 
+
 /**
  * @brief
  * This function initialize the packet handler. 
@@ -90,7 +103,7 @@ typedef enum{
  * @return
  * None
  */
-void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
+uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb_t  rxcb);
 
 /**
  * @brief
@@ -99,7 +112,7 @@ void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
  * @return
  * None
  */
-void ph_transmit_packet(void);
+uint32_t ph_transmit_packet(uint8_t uart_number, uint8_t tx_packet_body[]);
 
 /**
  * @brief
@@ -109,7 +122,7 @@ void ph_transmit_packet(void);
  * Status of the packet handler.
  * For the [status](@ref PH_STATUS_t)
  */
-PH_STATUS_t ph_get_status(void);
+PH_STATUS_t ph_get_status(uint8_t uart_number);
 
 
 
