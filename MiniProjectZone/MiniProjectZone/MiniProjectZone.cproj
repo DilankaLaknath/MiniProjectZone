@@ -152,6 +152,15 @@
     <Compile Include="packet_handler.h">
       <SubType>compile</SubType>
     </Compile>
+<<<<<<< HEAD
+=======
+    <Compile Include="timer_interrupts_hal.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="timer_interrupts_hal.h">
+      <SubType>compile</SubType>
+    </Compile>
+>>>>>>> master
     <Compile Include="UART_HAL.c">
       <SubType>compile</SubType>
     </Compile>

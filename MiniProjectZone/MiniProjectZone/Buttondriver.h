@@ -6,8 +6,11 @@
 #include <stdbool.h>
 #include "GPIO_HAL.h"
 
+/*Enumerators*/
+typedef enum {pressed, released} btn_state;
+	
 /*Function pointers*/
-typedef void (*ButtonCallback_t)(char buttonPort, uint8_t buttonPin, bool buttonState);
+typedef void (*ButtonCallback_t)(portx buttonPort, uint8_t buttonPin, btn_state buttonState);
 
 
 /*Functions*/
@@ -29,7 +32,7 @@ typedef void (*ButtonCallback_t)(char buttonPort, uint8_t buttonPin, bool button
  *
  * @return PIN_NOT_SUPPORT -The relavant port pin not supported for interrupt
  */
-uint32_t btn_init(enum portx btn_port, uint8_t btn_pin);
+uint32_t btn_init(portx btn_port, uint8_t btn_pin);
 
 
 /**

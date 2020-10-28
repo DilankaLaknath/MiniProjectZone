@@ -4,7 +4,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-enum parity_types{EVEN, ODD,NO_PARITY};
+typedef enum {EVEN, ODD,NO_PARITY}parity_types;
 
 typedef void (*on_byte_received)(uint8_t uart_number, char data, bool parity_error);
 typedef void (*on_transmission_complete)(uint8_t uart_number);
@@ -34,7 +34,7 @@ typedef void (*on_transmission_complete)(uint8_t uart_number);
  *
  * @return UNSUPPORTED_FRAME_SIZE - frame size is not 5/6/7/8.
  */
-uint32_t hal_uart_init(uint8_t uart_number, uint32_t baudrate, uint8_t frame_size, uint8_t parity_type);
+uint32_t hal_uart_init(uint8_t uart_number, uint32_t baudrate, uint8_t frame_size, parity_types parity_type);
 
 /**
  * @brief Function to give the call-back functions for a particular UART system.
