@@ -1,5 +1,5 @@
 /*
- * MiniProjectZone.c
+ * MiniProjectZone
  *
  * Created: 10/27/2020 1:32:33 PM
  * Author : Dilanka Wickramasinghe
@@ -9,25 +9,31 @@
 #include "LEDdriver.h"
 #include "command_processor.h"
 
-/*Definitions*/
-#define RADIUS 4;
+
+//////////////////// Definitions /////////////////////
+#define R_SQUARE 16;
 #define g_led_port_T1 PortB		//LED port number for Task1
 #define g_led_pin_T1 7			//LED pin number for Task1
 #define g_led_port_T2 PortB		//LED port number for Task2
 #define g_led_pin_T2 7			//LED pin number for Task2
 
-uint8_t claculate_radius(uint8_t packet_body);
-double doubleFromBytes(uint8_t *packet_body) ;
 
-enum{
+///////////////////// Private Enumerators /////////////////
+enum
+{
 	cmd_control_led = 0,
 	cmd_blink_led,
-	cmd_find_points_inside_the_circle,
-	};
+	cmd_find_points_inside_the_circle
+};
+
+////////////////////// Private Functions Initialization///////////////////
+uint16_t claculate_radius(packet_t * request, packet_t * response);
+uint32_t contor_led(packet_t * request, packet_t * response);
+uint32_t blink_led(packet_t * request, packet_t * response);
+uint32_t is_point_inside(packet_t * request, packet_t * response);
 
 
 ////////////////////// Public Functions///////////////////
-
 uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
 {
 	uint32_t err = NO_ERROR;
@@ -41,18 +47,22 @@ uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
 		err = contor_led(request, response);
 		break;
 		
-		case cmd_blink_led;
+		case cmd_blink_led:
+		err = blink_led(request, response);
 		break;
 		
 		case cmd_find_points_inside_the_circle:
+		err = is_point_inside(request, response);
 		break;
 		
 		default:
-			response->data[response->lenght++]; = ERROR_UNSUPPORTED_CMD;
+			response->data[response->lenght++] = ERROR_UNSUPPORTED_CMD;
 		break;		
 	}
 	return err;
 }
+
+////////////////////// Private Functions///////////////////
 
 uint32_t contor_led(packet_t * request, packet_t * response)
 {
@@ -74,73 +84,7 @@ uint32_t contor_led(packet_t * request, packet_t * response)
 	}
 }
 
-uint32_t find_task_to_execute(uint8_t packet_body[])
-{
-	uint8_t err =  NO_ERROR;
-	do 
-	{
-		if (packet_body[0] == NULL)
-		{
-			err = NULL_ERROR;
-			break;
-		}
-		if (packet_body[0] == TASK1)
-		{
-			uint8_t do_task1(packet_body[1]);
-		}
-		if (packet_body[0] == TASK2)
-		{
-			uint8_t do_task3(packet_body);
-		}
-		if (packet_body[0] == TASK3)
-		{
-			uint8_t packet_data[2] = {packet_body[1],packet_body[2]};
-			uint8_t do_task2(packet_data);
-		}
-		else
-		{
-			err = PACKET_ERROR;
-			break;			
-		}
-	} while (0);
-
-	return err;
-}
-
-
-uint8_t do_task1(uint8_t packet_body)
-{
-	uint8_t err = NULL_ERROR;
-	do 
-	{
-		if (packet_body == NULL)
-		{
-			err = NULL_ERROR;
-			break;
-		}
-		if (packet_body == LED_ON)
-		{
-			led_on (g_led_port_T1, g_led_pin_T1);
-			return LED_ON;
-			break;
-		}
-		else if (packet_body == LED_OFF)
-		{
-			led_off (g_led_port_T1, g_led_pin_T1);
-			return LED_OFF;
-			break;
-		}
-		else
-		{
-			err = WRONG_INPUT;
-			break;
-		}
-	} while (0);
-	
-	return err;
-}
-
-uint8_t do_task2(uint8_t packet_body)
+uint32_t blink_led(packet_t * request, packet_t * response)
 {
 	for (uint8_t i = 1; i < 7; ++i)
 	{
@@ -148,45 +92,43 @@ uint8_t do_task2(uint8_t packet_body)
 	}
 }
 
-uint8_t do_task3(uint8_t packet_body)
+
+uint32_t is_point_inside(packet_t * request, packet_t * response)
 {
-	uint32_t radius = claculate_radius(packet_body);
-	if (radius < RADIUS);
+	uint32_t r_square = claculate_radius(request, response);
+	if (r_square < R_SQUARE);
 	{
 		return INSIDE;
 	}
-	else
+	else if (r_square > R_SQUARE)
 	{
 		return OUTSIDE;
 	} 
+	else
+	{
+		return ON_THE_CIRCLE;
+	}
 }
 
-////////////////////// Private Functions///////////////////
-uint8_t claculate_radius(uint8_t packet_body[])
+
+uint16_t claculate_radius(packet_t * request, packet_t * response)
 {
-	uint8_t err = NULL_ERROR;
+	uint16_t err = NULL_ERROR;
 	do
 	{
-		if (packet_body[0] == NULL || packet_body[1] == NULL )
+		if (request->data[1] == NULL || request->data[2] == NULL )
 		{
-			err = NULL_ERROR;
+			response->data[response->2] =  NULL_ERROR;
 			break;
 		}
 		else
 		{
-			double cordinates_arr = doubleFromBytes(&packet_body);
-			double radius = sqrt(pow(abs(cordinates_arr[0]-5),2.0),pow(abs(cordinates_arr[1]-1),2.0));
-			return radius;
+			uint8_t x_square = (request->data[1]-5)*(request->data[1]-5);
+			uint8_t y_square = (request->data[2]-1)*(request->data[2]-1);
+			uint16_t r_square = x_square + y_square;
+			err = r_square;
 		}
 	} while (0);
 	
 	return err;
-}
-
-double doubleFromBytes(uint8_t *packet_body) 
-{
-	double cordinates;
-	// legal and portable C provided buffer contains a valid double representation
-	memcpy(&cordinates, packet_body, sizeof(double))
-	return cordinates;
 }

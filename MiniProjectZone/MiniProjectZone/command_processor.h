@@ -6,20 +6,14 @@
 #include "Buttondriver.h"
 #include "packet_handler.h"
 
-/*Enumerators*/
-enum task
-{
-	TASK1,
-	TASK2,
-	TASK3
-};
+/*Public Enumerators*/
 
 enum cmd_proc_errors
 {
 	NO_ERROR,
 	NULL_ERROR,
-	PACKET_ERROR,
-	WRONG_INPUT
+	ERROR_UNSUPPORTED_CMD,
+	ERROR_UNSUPPORTED_LED_CMD
 };
 
 enum task1_state
@@ -31,14 +25,10 @@ enum task1_state
 enum task2_state
 {
 	INSIDE,
-	OUTSIDE
+	OUTSIDE,
+	ON_THE_CIRCLE
 };
 
 uint32_t cmd_proc_process_request(packet_t * request, packet_t * response);
-
-uint32_t find_task_to_execute(uint8_t packet_body);
-uint8_t do_task1(uint8_t packet_body);
-uint8_t do_task2(uint8_t packet_body);
-uint8_t do_task3(uint8_t packet_body);
 
 #endif
