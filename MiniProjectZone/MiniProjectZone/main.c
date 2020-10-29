@@ -169,7 +169,7 @@ void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonStat
 {
 	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == 0) )
 	{
-		//cmd_blink_led_function(g_led_port, g_led_pin);
+		led_blink(g_led_port, g_led_pin, 3);
 	}
 }
 
