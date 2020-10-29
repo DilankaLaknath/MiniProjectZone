@@ -140,21 +140,20 @@ int main(void)
 	while (1)
 	{
 		if (g_array_filled_length != 0){
-			led_blink(g_led_port, g_led_pin, 3);
+			led_off(g_led_port, g_led_pin);
 		}
 		if (g_array_filled_length != 0)
 		{
-			led_blink(g_led_port, g_led_pin, 5);
-			//packet_t response;	 //create a packet for response			 
-			//cmd_proc_process_request( &(g_rx_packet_array[g_read_array_index]), &response);
-			//
-			//if (response.data[0] != 0)  // check whether the response should be sent to the packet handler or a push button task response
-			//{
-				//while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
-				//ph_transmit_packet(g_uart_number, &response);
-			//}					
+			packet_t response;	 //create a packet for response			 
+			cmd_proc_process_request( &(g_rx_packet_array[g_read_array_index]), &response);
+			
+			if (response.data[0] != cmd_blink_led)  // check whether the response should be sent to the packet handler or a push button task response
+			{
+				while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
+				ph_transmit_packet(g_uart_number, &response);
+			}					
 			g_array_filled_length --;  
-			//g_read_array_index = (g_read_array_index == (g_max_processing_rx_packets-1))? 0:(g_read_array_index + 1);  // reset read point			
+			g_read_array_index = (g_read_array_index == (g_max_processing_rx_packets-1))? 0:(g_read_array_index + 1);  // reset read point			
 		}
 	}
 }
@@ -184,7 +183,7 @@ void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonStat
 	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == pressed) && g_array_filled_length < g_max_processing_rx_packets )
 	{
 		memcpy(&(g_rx_packet_array[g_write_array_index]), &g_button_press_packet, sizeof(packet_t));
-		g_array_filled_length += 1;
+		g_array_filled_length ++;
 		//if (g_rx_packet_array[0].data[0] == cmd_blink_led){
 			//led_blink(g_led_port, g_led_pin, 3);
 		//}
