@@ -8,26 +8,26 @@
 
 /*Public Enumerators*/
 
-enum cmd_proc_errors
+enum firstBit
 {
-	NO_ERROR,
-	NULL_ERROR,
-	ERROR_UNSUPPORTED_CMD,
-	ERROR_UNSUPPORTED_LED_CMD
+	cmd_control_led = 0,
+	cmd_blink_led,
+	cmd_find_points_inside_the_circle,
+	ERROR_UNSUPPORTED_CMD
 };
 
-enum task1_state
+enum secondBit
 {
-	LED_ON,
-	LED_OFF
-};
-
-enum task2_state
-{
+	LED_ON = 0,
+	LED_OFF,
+	ERROR_UNSUPPORTED_LED_CMD,
+	LED_BLINK,
 	INSIDE,
 	OUTSIDE,
-	ON_THE_CIRCLE
+	ON_THE_CIRCLE,
+	OUTSIDE_NULL_INPUT
 };
+
 
 /**
  * @brief

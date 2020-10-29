@@ -18,14 +18,6 @@
 #define g_led_pin_T2 7			//LED pin number for Task2
 
 
-///////////////////// Private Enumerators /////////////////
-enum tasks
-{
-	cmd_control_led = 0,
-	cmd_blink_led,
-	cmd_find_points_inside_the_circle
-};
-
 ////////////////////// Private Functions Initialization///////////////////
 uint16_t claculate_radius(uint8_t x , uint8_t y);
 uint32_t contor_led(packet_t * request, packet_t * response);
@@ -33,7 +25,7 @@ uint32_t blink_led(packet_t * request, packet_t * response);
 uint32_t is_point_inside(packet_t * request, packet_t * response);
 
 
-////////////////////// Public Functions///////////////////
+////////////////////// Public Functions//////////////////////////////////
 uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
 {
 	uint32_t err = NO_ERROR;
@@ -62,18 +54,18 @@ uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
 	return err;
 }
 
-////////////////////// Private Functions///////////////////
+////////////////////// Private Functions/////////////////////////////////
 uint32_t contor_led(packet_t * request, packet_t * response)
 {
 	switch(request->data[1])
 	{
 		case LED_ON:
-		response->data[response->length++] = NO_ERROR;
+		response->data[response->length++] = LED_ON;
 		led_on (g_led_port_T1, g_led_pin_T1);
 		break;
 		
 		case LED_OFF:
-		response->data[response->length++] = NO_ERROR;
+		response->data[response->length++] = LED_OFF;
 		led_off (g_led_port_T1, g_led_pin_T1);
 		break;
 		
@@ -85,42 +77,33 @@ uint32_t contor_led(packet_t * request, packet_t * response)
 
 uint32_t blink_led(packet_t * request, packet_t * response)
 {
-	for (uint8_t i = 1; i < 7; ++i)
-	{
-		led_toggle(g_led_port_T2, g_led_pin_T2);
-	}
+	response->data[response->length++] = LED_BLINK;
+	led_blink(g_led_port_T2, g_led_pin_T2, 3);
 }
 
 
 uint32_t is_point_inside(packet_t * request, packet_t * response)
-{
-	uint8_t err = NULL_ERROR;
-	do
+{	if (request->data[1]==NULL && request->data[2]==NULL)
 	{
-		if (request->data[1] == NULL || request->data[2] == NULL )
+		response->data[response->length++] = OUTSIDE_NULL_INPUT;
+	}
+	else
+	{
+		uint16_t r_square = claculate_radius(request->data[1], request->data[2]);
+		if (r_square < R_SQUARE)
 		{
-			response->data[response->length++] =  NULL_ERROR;
-			break;
+			response->data[response->length++] = INSIDE;
+		}
+		else if (r_square > R_SQUARE)
+		{
+			response->data[response->length++] = OUTSIDE;
 		}
 		else
 		{
-			uint16_t r_square = claculate_radius(request->data[1], request->data[2]);
-			if (r_square < R_SQUARE)
-			{
-				return INSIDE;
-			}
-			else if (r_square > R_SQUARE)
-			{
-				return OUTSIDE;
-			}
-			else
-			{
-				return ON_THE_CIRCLE;
-			}
+			response->data[response->length++] = ON_THE_CIRCLE;
 		}
-	} while (0);
-	
-	return err;
+	}
+			
 }
 
 
