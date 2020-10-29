@@ -95,8 +95,8 @@ void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonStat
 	packet_t temp;
 	packet_t * packet;
 	packet=&temp;
-	uint8_t len = 5;
-	uint8_t arr[5]={3, 5, 6, 10, 24};
+	uint8_t len = 3;
+	uint8_t arr[3]={2,8,1};
 	
  	packet->length= len;
 	 memcpy(packet->data,arr,len);	
