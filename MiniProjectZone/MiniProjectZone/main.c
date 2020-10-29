@@ -120,8 +120,9 @@ int main(void)
 	g_write_array_index = 0;
 	g_array_filled_length = 0;
 	
-	g_button_press_packet.data[0] = 0;
-	g_button_press_packet.length = 1; // initialize a separate packet for push button event to sent to the command processor
+	// initialize a separate packet for push button event to sent to the command processor
+	g_button_press_packet.data[0] = cmd_blink_led;
+	g_button_press_packet.length = 1; 
 	
 	//to initialize buttons
 	btn_init (g_btn_port,g_btn_pin);
@@ -138,18 +139,22 @@ int main(void)
 	
 	while (1)
 	{
-		if(g_array_filled_length != 0)
+		//if (g_array_filled_length != 0){
+			//led_blink(g_led_port, g_led_pin, 3);
+		//}
+		if (g_array_filled_length != 0)
 		{
-			packet_t response;	 //create a packet for response			 
-			cmd_proc_process_request( &(g_rx_packet_array[g_read_array_index]), &response);
-			
-			if (response.data[0] != 0)  // check whether the response should be sent to the packet handler or a push button task response
-			{
-				while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
-				ph_transmit_packet(g_uart_number, &response);
-			}					
+			led_blink(g_led_port, g_led_pin, 5);
+			//packet_t response;	 //create a packet for response			 
+			//cmd_proc_process_request( &(g_rx_packet_array[g_read_array_index]), &response);
+			//
+			//if (response.data[0] != 0)  // check whether the response should be sent to the packet handler or a push button task response
+			//{
+				//while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
+				//ph_transmit_packet(g_uart_number, &response);
+			//}					
 			g_array_filled_length --;  
-			g_read_array_index = (g_read_array_index == (g_max_processing_rx_packets-1))? 0:(g_read_array_index + 1);  // reset read point			
+			//g_read_array_index = (g_read_array_index == (g_max_processing_rx_packets-1))? 0:(g_read_array_index + 1);  // reset read point			
 		}
 	}
 }
@@ -164,8 +169,10 @@ void when_ph_tx_complete(uint8_t uart_number, uint32_t status)
 
 void on_packet_received (uint8_t uart_number, packet_t * packet , PACKET_CRC_ERR_STATE_t error)
 {
+	
 	if(g_array_filled_length < g_max_processing_rx_packets)
 	{ 
+		
 		memcpy(&(g_rx_packet_array[g_write_array_index]), packet, sizeof(packet_t));
 		g_array_filled_length ++;
 		g_write_array_index = (g_write_array_index == (g_max_processing_rx_packets-1))? 0: g_write_array_index + 1; //reset write point
@@ -174,12 +181,18 @@ void on_packet_received (uint8_t uart_number, packet_t * packet , PACKET_CRC_ERR
 
 void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonState)
 {
-	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == 0) )
+	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == pressed) && g_array_filled_length < g_max_processing_rx_packets )
 	{
 		memcpy(&(g_rx_packet_array[g_write_array_index]), &g_button_press_packet, sizeof(packet_t));
-		g_array_filled_length ++;
+		g_array_filled_length += 1;
+		//if (g_rx_packet_array[0].data[0] == cmd_blink_led){
+			//led_blink(g_led_port, g_led_pin, 3);
+		//}
+		
+		
+		
 		g_write_array_index = (g_write_array_index == (g_max_processing_rx_packets-1))? 0: g_write_array_index + 1; //reset write point
-		//led_blink(g_led_port, g_led_pin, 3);
+		
 	}
 }
 
