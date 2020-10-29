@@ -14,6 +14,13 @@
 #include <stddef.h>
 #include <avr/io.h>
 
+<<<<<<< HEAD
+/*Possible CRC errors*/
+typedef enum{
+	NO_CRC_ERROR,
+	CRC_ERROR_DETECTED
+}PACKET_CRC_ERR_STATE_t;
+=======
 /*!
  Transmit complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
@@ -25,6 +32,7 @@ typedef void (*transmit_cmplt_cb_t) (uint32_t status);
  for the [callback table](@ref PH_CALLBACKS_t)
  */
 typedef void (*receive_cmplt_cb_t) (uint8_t * tl_packet, uint32_t error);
+>>>>>>> master
 
 
 /*!
@@ -38,6 +46,8 @@ typedef enum{
 }PH_STATUS_t;
 
 
+<<<<<<< HEAD
+=======
 typedef struct {
     /** This is called when a transmission is complete */
 	transmit_cmplt_cb_t tx_complete_cb;
@@ -46,6 +56,7 @@ typedef struct {
 }PH_CALLBACKS_t;
 
 
+>>>>>>> master
 /** Polynomial used to calculate the CRC 
  * (@ref http://www.lammertbies.nl/comm/info/crc-calculation.html)
  */
@@ -59,6 +70,34 @@ typedef struct {
 #define STX3    0x02
 #define STX4    0x02
 
+<<<<<<< HEAD
+#define MAX_PACKET_SIZE		10
+
+typedef struct  
+{
+	uint8_t lenght;
+	uint8_t data[MAX_PACKET_SIZE];
+}packet_t;
+
+/*!
+ Transmit complete callback function pointer prototype
+ for the [callback table](@ref PH_CALLBACKS_t)
+ */
+typedef void (*transmit_cmplt_cb_t) (uint8_t uart_number ,uint32_t status);
+
+/*!
+ Receive complete callback function pointer prototype
+ for the [callback table](@ref PH_CALLBACKS_t)
+ */
+typedef void (*receive_cmplt_cb_t) (uint8_t uart_number, packet_t * packet , PACKET_CRC_ERR_STATE_t error);
+
+typedef struct {
+	/** This is called when a transmission is complete */
+	transmit_cmplt_cb_t tx_complete_cb;
+	/** This is called when a packet has been received successfully */
+	receive_cmplt_cb_t  rx_complete_cb;
+}PH_CALLBACKS_t;
+=======
 /** States of packet collector state machine */
 typedef enum{
     /** Waiting for start byte 1 */
@@ -78,6 +117,7 @@ typedef enum{
     /** Waiting for high byte of 16bit CRC */     
     PACKET_COLLECTOR_STATE_STATE_CRC_H,       
 }PACKET_COLLECTOR_STATE_t;
+>>>>>>> master
 
 /**
  * @brief
@@ -95,7 +135,11 @@ typedef enum{
  * @return
  * None
  */
+<<<<<<< HEAD
+uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb_t  rxcb);
+=======
 void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
+>>>>>>> master
 
 /**
  * @brief
@@ -104,7 +148,11 @@ void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
  * @return
  * None
  */
+<<<<<<< HEAD
+uint32_t ph_transmit_packet(uint8_t uart_number, packet_t * packet);
+=======
 void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body);
+>>>>>>> master
 
 /**
  * @brief
@@ -114,7 +162,11 @@ void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body);
  * Status of the packet handler.
  * For the [status](@ref PH_STATUS_t)
  */
+<<<<<<< HEAD
+PH_STATUS_t ph_get_status(uint8_t uart_number);
+=======
 PH_STATUS_t ph_get_status(void);
+>>>>>>> master
 
 
 

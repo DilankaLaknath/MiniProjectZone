@@ -1,5 +1,27 @@
 #include "packet_handler.h"
 #include "UART_HAL.h"
+<<<<<<< HEAD
+#include "error.h"
+#include <util/delay.h>
+
+/**
+ * @brief
+ * This function initialize the packet handler. 
+ * <BR>
+ * It uses UART1 for packet transmission and reception. Packet reception is done  
+ * inside UART RX interrupt. After a valid packet received, it notifies the  
+ * application via rx_complete_cb. For the [callback table](@ref PH_CALLBACKS_t.  
+ * It has to be called before any other application/module/driver related functions.
+ *
+ * @param
+ * cb - pointer to a structure where holds the callback functions to be called at
+ *      different occasions. For the [callback table](@ref PH_CALLBACKS_t)
+ *
+ * @return
+ * None
+ */
+uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb_t  rxcb)
+=======
 
 #define RX_PKT_BUFF_LEN 20
 #define TX_PKT_BDY_BUFF_LEN 20
@@ -36,15 +58,40 @@ void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb)
 }
 
 void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body)
+>>>>>>> master
 {
 	
 }
 
+<<<<<<< HEAD
+/**
+ * @brief
+ * This function transmit a packet. It adds packet headers and CRC and then transmit. 
+ *
+ * @return
+ * None
+ */
+uint32_t ph_transmit_packet(uint8_t uart_number, packet_t * packet)
+=======
 PH_STATUS_t ph_get_status(void)
+>>>>>>> master
 {
 	
 }
 
+<<<<<<< HEAD
+/**
+ * @brief
+ * This function returns the current status of the packet handler. 
+ *
+ * @return
+ * Status of the packet handler.
+ * For the [status](@ref PH_STATUS_t)
+ */
+PH_STATUS_t ph_get_status(uint8_t uart_number)
+{
+	
+=======
 
 
 void when_byte_received(uint8_t uart_number, char data, bool parity_error)
@@ -53,4 +100,5 @@ void when_byte_received(uint8_t uart_number, char data, bool parity_error)
 	{
 	
 	}
+>>>>>>> master
 }
