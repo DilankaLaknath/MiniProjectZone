@@ -146,7 +146,7 @@ uint32_t hal_uart_set_callbacks(on_byte_received obr, on_transmission_complete o
 	{
 		if (obr == NULL || otc == NULL)
 		{
-			err=DRIV_CALLBACK_MISSING;
+			err=CALLBACK_MISSING;
 			break;
 		}
 		g_on_byte_received = obr;
@@ -229,8 +229,7 @@ uint32_t map_uart_registers(uint8_t uart_number)
 			break;
 		}
 		
-		switch (uart_number)
-		{
+		switch (uart_number){
 			case 0:
 			{
 				UCSRnA = &UCSR0A;

@@ -59,7 +59,7 @@ uint32_t btn_set_event_callback(ButtonCallback_t callback)
 	{
 		if (callback == NULL)
 		{
-			err = APP_CALLBACK_MISSING;
+			err = CALLBACK_MISSING;
 			break;
 		}
 		g_button_callback = callback;

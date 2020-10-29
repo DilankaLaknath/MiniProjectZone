@@ -14,31 +14,17 @@
 #include <stddef.h>
 #include <avr/io.h>
 
-/*Possible CRC errors*/
-typedef enum{
-	NO_CRC_ERROR,
-	CRC_ERROR_DETECTED
-}PACKET_CRC_ERR_STATE_t;
-
-#define MAX_PACKET_SIZE	13
-
-typedef struct
-{
-	uint8_t length;
-	uint8_t data[MAX_PACKET_SIZE];
-}packet_t;
-
 /*!
  Transmit complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
  */
-typedef void (*transmit_cmplt_cb_t) (uint8_t uart_number ,uint32_t status);
+typedef void (*transmit_cmplt_cb_t) (uint32_t status);
 
 /*!
  Receive complete callback function pointer prototype
  for the [callback table](@ref PH_CALLBACKS_t)
  */
-typedef void (*receive_cmplt_cb_t) (uint8_t uart_number, packet_t * packet , PACKET_CRC_ERR_STATE_t error);
+typedef void (*receive_cmplt_cb_t) (uint8_t * tl_packet, uint32_t error);
 
 
 /*!
@@ -52,13 +38,46 @@ typedef enum{
 }PH_STATUS_t;
 
 
-typedef struct  {
+typedef struct {
     /** This is called when a transmission is complete */
 	transmit_cmplt_cb_t tx_complete_cb;
     /** This is called when a packet has been received successfully */
 	receive_cmplt_cb_t  rx_complete_cb;
 }PH_CALLBACKS_t;
 
+
+/** Polynomial used to calculate the CRC 
+ * (@ref http://www.lammertbies.nl/comm/info/crc-calculation.html)
+ */
+#define POLY        0x1021
+#define CRC_INIT    0xFFFF
+
+
+/** Starting sequence of a packet */
+#define STX1    0x02
+#define STX2    0x02
+#define STX3    0x02
+#define STX4    0x02
+
+/** States of packet collector state machine */
+typedef enum{
+    /** Waiting for start byte 1 */
+    PACKET_COLLECTOR_STATE_STATE_STX_1 = 0,   
+    /** Waiting for start byte 2 */
+    PACKET_COLLECTOR_STATE_STATE_STX_2,   
+    /** Waiting for start byte 3 */
+    PACKET_COLLECTOR_STATE_STATE_STX_3,
+    /** Waiting for start byte 4 */    
+    PACKET_COLLECTOR_STATE_STATE_STX_4, 
+    /** Waiting for byte of packet length */    
+    PACKET_COLLECTOR_STATE_STATE_LENGTH, 
+    /** Collecting data bytes */  
+    PACKET_COLLECTOR_STATE_STATE_DATA, 
+    /** Waiting for low byte of 16bit CRC */      
+    PACKET_COLLECTOR_STATE_STATE_CRC_L, 
+    /** Waiting for high byte of 16bit CRC */     
+    PACKET_COLLECTOR_STATE_STATE_CRC_H,       
+}PACKET_COLLECTOR_STATE_t;
 
 /**
  * @brief
@@ -76,7 +95,7 @@ typedef struct  {
  * @return
  * None
  */
-uint32_t ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
+void ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
 
 /**
  * @brief
@@ -85,7 +104,7 @@ uint32_t ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb);
  * @return
  * None
  */
-uint32_t ph_transmit_packet(uint8_t uart_number, packet_t * packet);
+void ph_transmit_packet(uint8_t uart_number, uint8_t *tx_packet_body);
 
 /**
  * @brief
@@ -95,7 +114,7 @@ uint32_t ph_transmit_packet(uint8_t uart_number, packet_t * packet);
  * Status of the packet handler.
  * For the [status](@ref PH_STATUS_t)
  */
-PH_STATUS_t ph_get_status(uint8_t uart_number);
+PH_STATUS_t ph_get_status(void);
 
 
 
