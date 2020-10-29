@@ -105,6 +105,9 @@ uint8_t g_read_array_index = 0;
 uint8_t g_write_array_index = 0;
 uint8_t g_array_filled_length = 0;
 
+packet_t g_button_press_packet ; //separate packet for button press to send to the command processor
+
+
 void on_packet_received (uint8_t uart_number, packet_t * packet , PACKET_CRC_ERR_STATE_t error);
 void when_ph_tx_complete(uint8_t uart_number, uint32_t status);
 void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonState);
@@ -117,6 +120,9 @@ int main(void)
 	g_write_array_index = 0;
 	g_array_filled_length = 0;
 	
+	g_button_press_packet.data[0] = 0;
+	g_button_press_packet.length = 1; // initialize a separate packet for push button event to sent to the command processor
+	
 	//to initialize buttons
 	btn_init (g_btn_port,g_btn_pin);
 	PORTE |= (1<<PE4); //PULL UP THE button
@@ -127,6 +133,7 @@ int main(void)
 	
 	//to initialize the packet handler
 	PH_CALLBACKS_t g_ph_callbacks = {.rx_complete_cb = on_packet_received, .tx_complete_cb = when_ph_tx_complete};	
+
 	ph_init( g_uart_number, &g_ph_callbacks);
 	
 	while (1)
@@ -135,12 +142,12 @@ int main(void)
 		{
 			packet_t response;	 //create a packet for response			 
 			cmd_proc_process_request( &(g_rx_packet_array[g_read_array_index]), &response);
-			//cmd_proc_process_request( g_rx_packet_array, &response);
-
-			while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
 			
-			ph_transmit_packet(g_uart_number, &response);
-			
+			if (response.data[0] != 0)  // check whether the response should be sent to the packet handler or a push button task response
+			{
+				while(ph_get_status(g_uart_number) == PH_STATUS_TRANSMITTING); // wait until packet handler is free
+				ph_transmit_packet(g_uart_number, &response);
+			}					
 			g_array_filled_length --;  
 			g_read_array_index = (g_read_array_index == (g_max_processing_rx_packets-1))? 0:(g_read_array_index + 1);  // reset read point			
 		}
@@ -169,7 +176,10 @@ void on_button_pressed(portx buttonPort, uint8_t buttonPin, btn_state buttonStat
 {
 	if( (buttonPort == g_btn_port) && (buttonPin == g_btn_pin) && (buttonState == 0) )
 	{
-		led_blink(g_led_port, g_led_pin, 3);
+		memcpy(&(g_rx_packet_array[g_write_array_index]), &g_button_press_packet, sizeof(packet_t));
+		g_array_filled_length ++;
+		g_write_array_index = (g_write_array_index == (g_max_processing_rx_packets-1))? 0: g_write_array_index + 1; //reset write point
+		//led_blink(g_led_port, g_led_pin, 3);
 	}
 }
 
