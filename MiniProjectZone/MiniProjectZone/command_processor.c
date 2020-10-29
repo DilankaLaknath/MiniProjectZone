@@ -1,60 +1,135 @@
 /*
- * MiniProjectZone.c
+ * MiniProjectZone
  *
  * Created: 10/27/2020 1:32:33 PM
  * Author : Dilanka Wickramasinghe
  */ 
 
-//////////////////// Headder Files /////////////////////
+//////////////////// Header Files /////////////////////
 #include "LEDdriver.h"
-#include "Buttondriver.h"
-#include "UART_HAL.h"
-
-#define uint8_t RADIUS = 4;
+#include "command_processor.h"
 
 
-enum {
-	TASK1,
-	TASK2
-	};
-	
-uint32_t task_execute(uint8_t task_no, uint8_t serial_input)
+//////////////////// Definitions /////////////////////
+#define R_SQUARE 16
+#define g_led_port_T1 PortB		//LED port number for Task1
+#define g_led_pin_T1 7			//LED pin number for Task1
+#define g_led_port_T2 PortB		//LED port number for Task2
+#define g_led_pin_T2 7			//LED pin number for Task2
+
+
+///////////////////// Private Enumerators /////////////////
+enum tasks
 {
-	if (task_no == TASK1)
+	cmd_control_led = 0,
+	cmd_blink_led,
+	cmd_find_points_inside_the_circle
+};
+
+////////////////////// Private Functions Initialization///////////////////
+uint16_t claculate_radius(uint8_t x , uint8_t y);
+uint32_t contor_led(packet_t * request, packet_t * response);
+uint32_t blink_led(packet_t * request, packet_t * response);
+uint32_t is_point_inside(packet_t * request, packet_t * response);
+
+
+////////////////////// Public Functions///////////////////
+uint32_t cmd_proc_process_request(packet_t * request, packet_t * response)
+{
+	uint32_t err = NO_ERROR;
+	
+	response->length = 0;
+	response->data[response->length++] = request->data[0];
+	
+	switch(request->data[0])
 	{
-		uint8_t do_task1(serial_input);
+		case cmd_control_led:
+		err = contor_led(request, response);
+		break;
+		
+		case cmd_blink_led:
+		err = blink_led(request, response);
+		break;
+		
+		case cmd_find_points_inside_the_circle:
+		err = is_point_inside(request, response);
+		break;
+		
+		default:
+			response->data[response->length++] = ERROR_UNSUPPORTED_CMD;
+		break;		
 	}
-	else
-	{
-		uint8_t do_task2(serial_input);
-	}
+	return err;
 }
 
-
-uint8_t do_task1(uint8_t serial_input)
+////////////////////// Private Functions///////////////////
+uint32_t contor_led(packet_t * request, packet_t * response)
 {
-	uint8_t err = NULL_ERROR;
-	
-	if (serial_input == ON)
+	switch(request->data[1])
 	{
-		led_on(led_port, led_pin);
-	}
-	else if (serial_input == OFF)
-	{
-		led_off(led_port, led_pin);
-	}
-	else
-	{
-		//err = WRONG INPUT;
+		case LED_ON:
+		response->data[response->length++] = NO_ERROR;
+		led_on (g_led_port_T1, g_led_pin_T1);
+		break;
+		
+		case LED_OFF:
+		response->data[response->length++] = NO_ERROR;
+		led_off (g_led_port_T1, g_led_pin_T1);
+		break;
+		
+		default:
+		response->data[response->length++] = ERROR_UNSUPPORTED_LED_CMD;
 		break;
 	}
 }
 
-uint8_t do_task2(uint8_t serial_input)
+uint32_t blink_led(packet_t * request, packet_t * response)
 {
-	uint32_t radius = claculate_radius(serial_input);
-	if (radius < RADIUS);
+	for (uint8_t i = 1; i < 7; ++i)
 	{
-		return (Inside);
-	} 
+		led_toggle(g_led_port_T2, g_led_pin_T2);
+	}
+}
+
+
+uint32_t is_point_inside(packet_t * request, packet_t * response)
+{
+	uint8_t err = NULL_ERROR;
+	do
+	{
+		if (request->data[1] == NULL || request->data[2] == NULL )
+		{
+			response->data[response->length++] =  NULL_ERROR;
+			break;
+		}
+		else
+		{
+			uint16_t r_square = claculate_radius(request->data[1], request->data[2]);
+			if (r_square < R_SQUARE)
+			{
+				return INSIDE;
+			}
+			else if (r_square > R_SQUARE)
+			{
+				return OUTSIDE;
+			}
+			else
+			{
+				return ON_THE_CIRCLE;
+			}
+		}
+	} while (0);
+	
+	return err;
+}
+
+
+uint16_t claculate_radius(uint8_t x , uint8_t y)
+{
+
+	uint16_t x_square = (x-5)*(x-5);
+	uint16_t y_square = (y-1)*(y-1);
+	uint16_t r_square = x_square + y_square;
+	return r_square;
+
 }
