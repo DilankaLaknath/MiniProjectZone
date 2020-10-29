@@ -27,7 +27,7 @@ enum tasks
 };
 
 ////////////////////// Private Functions Initialization///////////////////
-uint16_t claculate_radius(packet_t * request, packet_t * response);
+uint16_t claculate_radius(uint8_t x , uint8_t y);
 uint32_t contor_led(packet_t * request, packet_t * response);
 uint32_t blink_led(packet_t * request, packet_t * response);
 uint32_t is_point_inside(packet_t * request, packet_t * response);
@@ -94,25 +94,7 @@ uint32_t blink_led(packet_t * request, packet_t * response)
 
 uint32_t is_point_inside(packet_t * request, packet_t * response)
 {
-	uint32_t r_square = claculate_radius(request, response);
-	if (r_square < R_SQUARE);
-	{
-		return INSIDE;
-	}
-	else if (r_square > R_SQUARE)
-	{
-		return OUTSIDE;
-	} 
-	else
-	{
-		return ON_THE_CIRCLE;
-	}
-}
-
-
-uint16_t claculate_radius(packet_t * request, packet_t * response)
-{
-	uint16_t err = NULL_ERROR;
+	uint8_t err = NULL_ERROR;
 	do
 	{
 		if (request->data[1] == NULL || request->data[2] == NULL )
@@ -122,12 +104,32 @@ uint16_t claculate_radius(packet_t * request, packet_t * response)
 		}
 		else
 		{
-			uint8_t x_square = (request->data[1]-5)*(request->data[1]-5);
-			uint8_t y_square = (request->data[2]-1)*(request->data[2]-1);
-			uint16_t r_square = x_square + y_square;
-			err = r_square;
+			uint16_t r_square = claculate_radius(request->data[1], request->data[2]);
+			if (r_square < R_SQUARE);
+			{
+				return INSIDE;
+			}
+			else if (r_square > R_SQUARE)
+			{
+				return OUTSIDE;
+			}
+			else
+			{
+				return ON_THE_CIRCLE;
+			}
 		}
 	} while (0);
 	
 	return err;
+}
+
+
+uint16_t claculate_radius(uint8_t x , uint8_t y)
+{
+
+	uint16_t x_square = (x-5)*(x-5);
+	uint16_t y_square = (y-1)*(y-1);
+	uint16_t r_square = x_square + y_square;
+	return r_square;
+
 }
