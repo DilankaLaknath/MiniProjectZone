@@ -83,9 +83,7 @@ uint32_t ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb )
 			err = APP_CALLBACK_MISSING;
 			break;
 		}
-		//memcpy(&g_app_callbacks, cb, 2);
-		g_app_callbacks.rx_complete_cb = cb->rx_complete_cb;
-		g_app_callbacks.tx_complete_cb = cb->tx_complete_cb;
+		memcpy (&g_app_callbacks, cb, sizeof(PH_CALLBACKS_t));
 		err = hal_uart_set_callbacks(when_byte_received, when_transmission_complete);
 		if (err)
 		{
