@@ -19,8 +19,8 @@ enum firstBit
 
 enum secondBit
 {
-	LED_ON = 0,
-	LED_OFF,
+	LED_OFF = 0,
+	LED_ON,
 	ERROR_UNSUPPORTED_LED_CMD,
 	LED_BLINK,
 	INSIDE,

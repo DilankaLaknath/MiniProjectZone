@@ -103,7 +103,7 @@
 packet_t g_rx_packet_array[g_max_processing_rx_packets]; //use this circular array to buffer the received packets
 uint8_t g_read_array_index = 0;
 uint8_t g_write_array_index = 0;
-uint8_t g_array_filled_length = 0;
+volatile uint8_t g_array_filled_length = 0;
 
 packet_t g_button_press_packet ; //separate packet for button press to send to the command processor
 
@@ -139,9 +139,7 @@ int main(void)
 	
 	while (1)
 	{
-		if (g_array_filled_length != 0){
-			led_off(g_led_port, g_led_pin);
-		}
+		
 		if (g_array_filled_length != 0)
 		{
 			packet_t response;	 //create a packet for response			 
