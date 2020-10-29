@@ -1,26 +1,49 @@
 #include "packet_handler.h"
 #include "UART_HAL.h"
 #include "error.h"
-#include <util/delay.h>
 
-#define RX_PKT_BUFF_LEN 12
-#define TX_PKT_BUFF_LEN 12
+/** Polynomial used to calculate the CRC 
+ * (@ref http://www.lammertbies.nl/comm/info/crc-calculation.html)
+ */
+#define POLY        0x1021
+#define CRC_INIT    0xFFFF
+
+
+/** Starting sequence of a packet */
+#define STX1    0x02
+#define STX2    0x02
+#define STX3    0x02
+#define STX4    0x02
+
+/** States of packet collector state machine */
+typedef enum{
+    /** Waiting for start byte 1 */
+    PACKET_COLLECTOR_STATE_STATE_STX_1 = 0,   
+    /** Waiting for start byte 2 */
+    PACKET_COLLECTOR_STATE_STATE_STX_2,   
+    /** Waiting for start byte 3 */
+    PACKET_COLLECTOR_STATE_STATE_STX_3,
+    /** Waiting for start byte 4 */    
+    PACKET_COLLECTOR_STATE_STATE_STX_4, 
+    /** Waiting for byte of packet length */    
+    PACKET_COLLECTOR_STATE_STATE_LENGTH, 
+    /** Collecting data bytes */  
+    PACKET_COLLECTOR_STATE_STATE_DATA, 
+    /** Waiting for low byte of 16bit CRC */      
+    PACKET_COLLECTOR_STATE_STATE_CRC_L, 
+    /** Waiting for high byte of 16bit CRC */     
+    PACKET_COLLECTOR_STATE_STATE_CRC_H,       
+}PACKET_COLLECTOR_STATE_t;
+
 
 /*! Holds the current state of the packet collector */
 uint8_t g_packet_collector_uartnum = NULL;
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////TEMP//////////////////////////////////////////////////////
-transmit_cmplt_cb_t tx_complete_cb;
-receive_cmplt_cb_t  rx_complete_cb;
-
 /*! Structure which holds application callbacks. Callbacks has been set to null */
-PH_CALLBACKS_t * g_app_callbacks = {NULL ,NULL};
+PH_CALLBACKS_t g_app_callbacks = {NULL ,NULL};
 
 /*! Holds the current state of the packet collector */
 PACKET_COLLECTOR_STATE_t g_packet_collector_state;
-
-/*! Holds the length of data to be received via UART */
-uint8_t g_rx_length;
 
 /*! Holds the length of data to be received via UART */
 uint8_t g_rx_buff_idx;
@@ -29,13 +52,10 @@ uint8_t g_rx_buff_idx;
 uint16_t g_cal_crc;
 
 /*! Used to store the received packet */
-uint8_t g_rx_packet_buffer[RX_PKT_BUFF_LEN];
+packet_t g_rx_packet_buffer;
 
 /*! Used to keep the transmitting packet */
-uint8_t g_tx_buff[TX_PKT_BUFF_LEN + 7];   //7 is the packet handler overhead
-
-/*! Used to store the received CRC */
-uint16_t g_received_crc;   //////////////////////////////////////////////////////////////UNWANTED/////////////////////////////////////////////
+uint8_t g_tx_buff[MAX_PACKET_SIZE + 7];   //7 is the packet handler overhead
 
 /*! Used to store the CRC error of received packet*/
 PACKET_CRC_ERR_STATE_t g_crc_err = NO_CRC_ERROR;
@@ -43,12 +63,12 @@ PACKET_CRC_ERR_STATE_t g_crc_err = NO_CRC_ERROR;
 /*! Used to store the current status of a packet handler */
 PH_STATUS_t g_ph_status[4];
 
-uint16_t crc16(uint8_t* data_p, uint8_t length);
+uint16_t crc16(uint8_t * data_p, uint8_t length);
 void when_byte_received(uint8_t uart_number, uint8_t data, bool parity_error);
 void when_transmission_complete(uint8_t uart_number);
 
 
-uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb_t  rxcb)
+uint32_t ph_init(uint8_t uart_number, PH_CALLBACKS_t * cb )
 {
 	uint32_t err = NO_ERROR;
 	do
@@ -58,14 +78,14 @@ uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb
 		{
 			break;
 		}
-		if (rxcb ==NULL || txcb == NULL)                                    /////////////////////////////changes needed//////////////////////////////////////////
+		if (cb->tx_complete_cb ==NULL || cb->rx_complete_cb == NULL)  
 		{
 			err = APP_CALLBACK_MISSING;
 			break;
 		}
-		tx_complete_cb = txcb;                                                  ///////////////////////////////////////////////////////////new/////////////////////////
-		rx_complete_cb = rxcb;
-		//g_app_callbacks = cb;
+		//memcpy(&g_app_callbacks, cb, 2);
+		g_app_callbacks.rx_complete_cb = cb->rx_complete_cb;
+		g_app_callbacks.tx_complete_cb = cb->tx_complete_cb;
 		err = hal_uart_set_callbacks(when_byte_received, when_transmission_complete);
 		if (err)
 		{
@@ -80,7 +100,7 @@ uint32_t ph_init(uint8_t uart_number, transmit_cmplt_cb_t txcb, receive_cmplt_cb
 	return err;
 }
 
-uint32_t ph_transmit_packet(uint8_t uart_number, uint8_t tx_packet_body[])
+uint32_t ph_transmit_packet(uint8_t uart_number, packet_t * packet)
 {
 	uint32_t err = NO_ERROR;
 	do
@@ -97,20 +117,19 @@ uint32_t ph_transmit_packet(uint8_t uart_number, uint8_t tx_packet_body[])
 			g_ph_status [uart_number] = PH_STATUS_READY_TO_SEND;
 			break;
 		}
-		size_t length = 5;//sizeof(tx_packet_body)/sizeof(tx_packet_body[0]);
-		if (length > TX_PKT_BUFF_LEN)
+		if (packet->length > MAX_PACKET_SIZE)
 		{
 			err=PACKET_BODY_LENGTH_ERROR;
 			g_ph_status[uart_number] = PH_STATUS_READY_TO_SEND;
 			break;
 		}
-		g_tx_buff[4] = length;
-		memcpy(g_tx_buff+5, tx_packet_body, 5);
+		g_tx_buff[4] = packet->length;
+		memcpy(g_tx_buff+5, &(packet->data), packet->length);
 		uint8_t *CRC_arr;
-		uint16_t CRC_val= crc16(tx_packet_body, length);
+		uint16_t CRC_val= crc16(&packet->data, packet->length);
 		CRC_arr = &CRC_val;
-		memcpy(g_tx_buff+5+length, CRC_arr, 2);
-		err = hal_uart_send(uart_number, &g_tx_buff, length+7);
+		memcpy(g_tx_buff+5+(packet->length), CRC_arr, 2);
+		err = hal_uart_send(uart_number, &g_tx_buff, (packet->length)+7);
 		
 		
 	} while (0); 
@@ -203,10 +222,10 @@ void when_byte_received(uint8_t uart_number, uint8_t data, bool parity_error)
 		 }
 		 case PACKET_COLLECTOR_STATE_STATE_LENGTH:
 		 {
-			 if (data < RX_PKT_BUFF_LEN && data != 0 && uart_number == g_packet_collector_uartnum)
+			 if (data < MAX_PACKET_SIZE && data != 0 && uart_number == g_packet_collector_uartnum)
 			 {
 				 g_rx_buff_idx = 0;
-				 g_rx_length = data;
+				 g_rx_packet_buffer.length = data;
 				 g_packet_collector_state = PACKET_COLLECTOR_STATE_STATE_DATA;
 			 }
 			 else
@@ -226,17 +245,16 @@ void when_byte_received(uint8_t uart_number, uint8_t data, bool parity_error)
 		 }
 		 case PACKET_COLLECTOR_STATE_STATE_DATA:
 		 {
-			 if (g_rx_buff_idx < (g_rx_length-1) && uart_number == g_packet_collector_uartnum)
+			 if (g_rx_buff_idx < (g_rx_packet_buffer.length-1) && uart_number == g_packet_collector_uartnum)
 			 {
-				 g_rx_packet_buffer[g_rx_buff_idx] = data;
-				 g_rx_buff_idx ++;
+				 g_rx_packet_buffer.data[g_rx_buff_idx++] = data;
 			 }
-			 else if (g_rx_buff_idx == (g_rx_length-1) && uart_number == g_packet_collector_uartnum)
+			 else if (g_rx_buff_idx == (g_rx_packet_buffer.length-1) && uart_number == g_packet_collector_uartnum)
 			 {
-				 g_rx_packet_buffer[g_rx_buff_idx] = data;
+				 g_rx_packet_buffer.data[g_rx_buff_idx] = data;
 				 g_rx_buff_idx = 0;
 				 g_packet_collector_state = PACKET_COLLECTOR_STATE_STATE_CRC_L;
-				 g_cal_crc = crc16(g_rx_packet_buffer, g_rx_length);
+				 g_cal_crc = crc16(&g_rx_packet_buffer.data, g_rx_packet_buffer.length);
 			 }
 			 else
 			 {
@@ -288,9 +306,9 @@ void when_byte_received(uint8_t uart_number, uint8_t data, bool parity_error)
 					 g_crc_err=CRC_ERROR_DETECTED;
 				 }
 				 g_packet_collector_state = PACKET_COLLECTOR_STATE_STATE_STX_1;
-				 if (rx_complete_cb != NULL)
+				 if (g_app_callbacks.rx_complete_cb != NULL)
 				 {
-					 rx_complete_cb(uart_number,g_rx_packet_buffer,g_crc_err);
+					 g_app_callbacks.rx_complete_cb(uart_number,&g_rx_packet_buffer,g_crc_err);
 				 }
 				 g_crc_err=NO_CRC_ERROR;
 			 }
@@ -315,7 +333,7 @@ void when_byte_received(uint8_t uart_number, uint8_t data, bool parity_error)
 void when_transmission_complete(uint8_t uart_number)
 {
 	g_ph_status[uart_number] = PH_STATUS_READY_TO_SEND;
-	tx_complete_cb(uart_number,1);
+	g_app_callbacks.tx_complete_cb(uart_number,1);
 }
 
 uint16_t crc16(uint8_t* data_p, uint8_t length)
