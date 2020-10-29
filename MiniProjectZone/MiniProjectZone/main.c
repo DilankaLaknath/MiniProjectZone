@@ -139,9 +139,9 @@ int main(void)
 	
 	while (1)
 	{
-		//if (g_array_filled_length != 0){
-			//led_blink(g_led_port, g_led_pin, 3);
-		//}
+		if (g_array_filled_length != 0){
+			led_blink(g_led_port, g_led_pin, 3);
+		}
 		if (g_array_filled_length != 0)
 		{
 			led_blink(g_led_port, g_led_pin, 5);
