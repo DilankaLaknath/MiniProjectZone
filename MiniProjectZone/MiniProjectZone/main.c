@@ -162,7 +162,7 @@ void when_ph_tx_complete(uint8_t uart_number, uint32_t status)
 {
 	if(uart_number == g_uart_number)    // didn't consider about the 'status'
 	{
-		led_toggle(g_led_port, g_led_pin);
+		//led_toggle(g_led_port, g_led_pin);
 	}
 }
 
